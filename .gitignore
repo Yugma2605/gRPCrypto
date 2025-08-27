@@ -1,0 +1,39 @@
+# --- Node.js / TypeScript ---
+node_modules/
+.pnpm-store/
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# --- Environment variables ---
+.env
+.env.*.local
+
+# --- Playwright ---
+playwright-report/
+test-results/
+blob-report/
+*.log
+
+# --- Buf ---
+buf.lock
+
+# --- IDE / Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db
+
+# --- pnpm / npm logs ---
+.pnpm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Misc cache ---
+*.cache

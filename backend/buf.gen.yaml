@@ -1,0 +1,15 @@
+version: v2
+clean: true
+managed:
+  enabled: false
+
+plugins:
+  - remote: buf.build/connectrpc/query-es:v2.1.1
+    out: src/gen
+    opt:
+      - target=ts
+
+inputs:
+  - directory: .
+    paths:
+      - proto/price.proto
