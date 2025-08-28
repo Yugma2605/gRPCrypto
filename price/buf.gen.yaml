@@ -1,0 +1,13 @@
+version: v2
+plugins:
+  # Generate TypeScript client code for frontend using ConnectRPC
+  - local: protoc-gen-es
+    out: ../frontend/src/gen   # adjust path relative to proto folder
+    include_imports: true
+    opt: target=ts
+
+  - local: protoc-gen-es
+    out: ../backend/src/gen   # adjust path relative to proto folder
+    include_imports: true
+    opt: target=ts
+

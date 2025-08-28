@@ -1,54 +1,23 @@
-// src/server.ts
-import { chromium } from "playwright";
-import { PriceServiceServer } from "./gen/price_connect";
-import { StreamPriceResponse, StreamPriceRequest } from "./gen/price_pb";
+import { fastify } from "fastify";
+import { fastifyConnectPlugin } from "@connectrpc/connect-fastify";
+import routes from "./connect";
 
-const server = new PriceServiceServer();
+async function main() {
+  const server = fastify();
 
-server.register(async function* (request: StreamPriceRequest) {
-  // Launch Playwright
-  const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage();
+  // Register Connect RPC routes
+  await server.register(fastifyConnectPlugin, {
+    routes,
+  });
 
-  const ticker = request.ticker.toUpperCase();
-  const url = `https://www.tradingview.com/symbols/${ticker}/?exchange=BINANCE`;
-  await page.goto(url, { waitUntil: "domcontentloaded" });
+  // Basic HTTP route for testing
+  server.get("/", (_, reply) => {
+    reply.type("text/plain");
+    reply.send("Hello World!");
+  });
 
-  while (true) {
-    try {
-      // Get the parent span (outer part of price)
-      const element = await page.$("span.js-symbol-last");
+  await server.listen({ host: "localhost", port: 8085 });
+  console.log("server is listening at", server.addresses());
+}
 
-      if (element) {
-        // Outer text: first child (integer part with commas)
-        const outerText = await element.evaluate(
-          (el) => el.childNodes[0].textContent?.trim() ?? ""
-        );
-
-        // Inner text: nested <span> (decimal part)
-        const innerText = await element.evaluate(
-          (el) => el.querySelector("span")?.textContent?.trim() ?? ""
-        );
-
-        // Merge them into a full price string
-        const priceStr = `${outerText}${innerText}`; // e.g. "112,2" + "91.69" = "112,291.69"
-        const price = Number(priceStr.replace(/,/g, "")); // -> 112291.69
-
-        yield { ticker, price } as StreamPriceResponse;
-      } else {
-        console.warn("Price element not found on page");
-      }
-
-      await new Promise((res) => setTimeout(res, 2000));
-    } catch (err) {
-      console.error("Error scraping price:", err);
-      await new Promise((res) => setTimeout(res, 5000));
-    }
-  }
-});
-
-// Example usage
-const request: StreamPriceRequest = { ticker: "BTCUSD" };
-server.StreamPrice(request, (resp) => {
-  console.log("Price update:", resp);
-});
+void main();
