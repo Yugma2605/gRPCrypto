@@ -5,6 +5,8 @@ dist/
 build/
 out/
 *.tsbuildinfo
+/backend/src/gen/
+/frontend/src/gen/
 
 # --- Environment variables ---
 .env
@@ -37,3 +39,6 @@ yarn-error.log*
 
 # --- Misc cache ---
 *.cache
+
+/.next/
+/out/

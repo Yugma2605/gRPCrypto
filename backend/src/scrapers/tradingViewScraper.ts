@@ -10,6 +10,14 @@ export class TradingViewScraper {
 
     const url = `https://www.tradingview.com/symbols/${ticker}/?exchange=BINANCE`;
     await this.page.goto(url, { waitUntil: "domcontentloaded" });
+
+    // Check if page shows "not found" error
+    const errorElement = await this.page.$("h1.tv-http-error-page__title");
+    if (errorElement) {
+      const errorText = await errorElement.textContent();
+      await this.close(); // Close the tab immediately to save resources
+      throw new Error(errorText?.trim() || "Invalid ticker");
+    }
   }
 
   async getPrice(ticker: string): Promise<number | null> {
@@ -30,6 +38,7 @@ export class TradingViewScraper {
   }
 
   async close() {
+    await this.page?.close();
     await this.browser?.close();
   }
 }
