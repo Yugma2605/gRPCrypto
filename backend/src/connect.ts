@@ -14,7 +14,7 @@ const routes = (router: ReturnType<typeof createConnectRouter>) =>
 
         // Keep streaming until client disconnects
         while (!ctx.signal.aborted) {
-          const price = await scraper.getPrice(req.ticker);
+          const price = await scraper.getPrice();
           if (price !== null) {
             yield { ticker: req.ticker, price };
           }
@@ -29,5 +29,18 @@ const routes = (router: ReturnType<typeof createConnectRouter>) =>
       }
     },
   });
+
+// Optional: cleanly shutdown the browser when app exits
+process.on("SIGINT", async () => {
+  console.log("Shutting down browser...");
+  await TradingViewScraper.shutdown();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  console.log("Shutting down browser...");
+  await TradingViewScraper.shutdown();
+  process.exit(0);
+});
 
 export default routes;

@@ -1,12 +1,20 @@
 import { chromium, Browser, Page } from "playwright";
 
 export class TradingViewScraper {
-  private browser?: Browser;
+  private static browser?: Browser; // one shared browser across all scrapers
   private page?: Page;
 
+  // Ensure the shared browser is started once
+  private static async getBrowser(): Promise<Browser> {
+    if (!TradingViewScraper.browser) {
+      TradingViewScraper.browser = await chromium.launch({ headless: false });
+    }
+    return TradingViewScraper.browser;
+  }
+
   async init(ticker: string) {
-    this.browser = await chromium.launch({ headless: false });
-    this.page = await this.browser.newPage();
+    const browser = await TradingViewScraper.getBrowser();
+    this.page = await browser.newPage();
 
     const url = `https://www.tradingview.com/symbols/${ticker}/?exchange=BINANCE`;
     await this.page.goto(url, { waitUntil: "domcontentloaded" });
@@ -15,12 +23,12 @@ export class TradingViewScraper {
     const errorElement = await this.page.$("h1.tv-http-error-page__title");
     if (errorElement) {
       const errorText = await errorElement.textContent();
-      await this.close(); // Close the tab immediately to save resources
+      await this.close(); // Close only this page, keep browser alive
       throw new Error(errorText?.trim() || "Invalid ticker");
     }
   }
 
-  async getPrice(ticker: string): Promise<number | null> {
+  async getPrice(): Promise<number | null> {
     if (!this.page) return null;
 
     const element = await this.page.$("span.js-symbol-last");
@@ -38,7 +46,16 @@ export class TradingViewScraper {
   }
 
   async close() {
+    // Close only this page, keep shared browser running
     await this.page?.close();
-    await this.browser?.close();
+    this.page = undefined;
+  }
+
+  // Optional: shutdown everything when server exits
+  static async shutdown() {
+    if (TradingViewScraper.browser) {
+      await TradingViewScraper.browser.close();
+      TradingViewScraper.browser = undefined;
+    }
   }
 }
