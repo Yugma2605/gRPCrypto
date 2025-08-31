@@ -1,13 +1,16 @@
 import { chromium, Browser, Page } from "playwright";
 
-export class TradingViewScraper {
-  private static browser?: Browser; // one shared browser
-  private static pages: Map<string, Page> = new Map(); // ticker -> shared Page
+interface PageEntry {
+  page: Page;
+  subscribers: number;
+}
 
-  private page?: Page;
+export class TradingViewScraper {
+  private static browser?: Browser;
+  private static pages: Map<string, PageEntry> = new Map();
+
   private ticker?: string;
 
-  // Ensure the shared browser is started once
   private static async getBrowser(): Promise<Browser> {
     if (!TradingViewScraper.browser) {
       TradingViewScraper.browser = await chromium.launch({ headless: false });
@@ -19,32 +22,34 @@ export class TradingViewScraper {
     this.ticker = ticker;
     const browser = await TradingViewScraper.getBrowser();
 
-    // Check if a page for this ticker already exists
     if (TradingViewScraper.pages.has(ticker)) {
-      this.page = TradingViewScraper.pages.get(ticker)!;
-      return; // reuse
+      // already exists → just increase subscription count
+      TradingViewScraper.pages.get(ticker)!.subscribers++;
+      return;
     }
 
-    // Otherwise, create a new page
-    this.page = await browser.newPage();
-    TradingViewScraper.pages.set(ticker, this.page);
+    // create new page
+    const page = await browser.newPage();
+    TradingViewScraper.pages.set(ticker, { page, subscribers: 1 });
 
     const url = `https://www.tradingview.com/symbols/${ticker}/?exchange=BINANCE`;
-    await this.page.goto(url, { waitUntil: "domcontentloaded" });
+    await page.goto(url, { waitUntil: "domcontentloaded" });
 
-    // Check if page shows "not found" error
-    const errorElement = await this.page.$("h1.tv-http-error-page__title");
+    const errorElement = await page.$("h1.tv-http-error-page__title");
     if (errorElement) {
       const errorText = await errorElement.textContent();
-      await this.close(); // Close only this page
+      await page.close();
+      TradingViewScraper.pages.delete(ticker);
       throw new Error(errorText?.trim() || "Invalid ticker");
     }
   }
 
   async getPrice(): Promise<number | null> {
-    if (!this.page) return null;
+    if (!this.ticker) return null;
+    const entry = TradingViewScraper.pages.get(this.ticker);
+    if (!entry) return null;
 
-    const element = await this.page.$("span.js-symbol-last");
+    const element = await entry.page.$("span.js-symbol-last");
     if (!element) return null;
 
     const outerText = await element.evaluate(
@@ -59,18 +64,21 @@ export class TradingViewScraper {
   }
 
   async close() {
-    if (this.page && this.ticker) {
-      // remove from map
+    if (!this.ticker) return;
+    const entry = TradingViewScraper.pages.get(this.ticker);
+    if (!entry) return;
+
+    entry.subscribers--;
+    if (entry.subscribers <= 0) {
+      // last subscriber gone → really close the page
+      await entry.page.close();
       TradingViewScraper.pages.delete(this.ticker);
-      await this.page.close();
-      this.page = undefined;
     }
   }
 
-  // Optional: shutdown everything when server exits
   static async shutdown() {
-    for (const page of TradingViewScraper.pages.values()) {
-      await page.close();
+    for (const entry of TradingViewScraper.pages.values()) {
+      await entry.page.close();
     }
     TradingViewScraper.pages.clear();
 
