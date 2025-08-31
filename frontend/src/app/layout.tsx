@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";  // Sans font
 import { Roboto_Mono } from "next/font/google"; // Mono font
 
 export const metadata = {
-  title: "My App",
+  title: "Ticker Tracker",
   description: "Demo with Next.js fonts",
 };
 
