@@ -1,10 +1,5 @@
-# Project Pluto - Fullstack Coding Assessment
-
-## Purpose
-Welcome! This assessment is a practical preview of life as a Fullstack Engineer at Project Pluto. You'll use our standard tech stack to build a simplified data processing pipeline, mirroring the kinds of challenges our team solves every day. This is a great opportunity for you to showcase your engineering skills on a project that’s representative of our work.
-
-## Task
-Your task is to build a full-stack web application that streams real-time cryptocurrency prices from https://tradingview.com. The application will consist of a Node.js backend and a Next.js frontend.
+## Project Description
+A full-stack web application that streams real-time cryptocurrency prices from https://tradingview.com. The application will consist of a Node.js backend and a Next.js frontend.
 
 A demonstration of the expected functionality is available in the video file `demo.gif` file in this repository.
 
@@ -18,9 +13,6 @@ You are required to use the following technologies:
 *   ConnectRPC for communication between the frontend and backend
 *   Playwright to stream price data from TradingView via the Node.js server
 
-You can assume `bash`, `node`, and `pnpm` are pre-installed. All other dependencies (e.g., `next`, `tsx`, `react`, `playwright`, `@connectrpc/*`) must be listed in `package.json` and installable via `pnpm install`. Feel free to add any other dependencies you need to complete the task.
-
-## Requirements
 
 #### Data Streaming
 *   Stream live cryptocurrency prices directly from TradingView using Playwright.
@@ -33,9 +25,6 @@ You can assume `bash`, `node`, and `pnpm` are pre-installed. All other dependenc
 *   **Visibility:** Run Playwright in headed mode (not headless) so we can observe the browser automation in action.
 *   **Logging:** Use `console.*` on both the backend and frontend to log key events. This helps us understand the application's behavior.
 *   **UI:** The list of tickers displayed on the user interface must be sorted alphabetically.
-
-## Evaluation Criteria
-Your submission will be evaluated on the following criteria:
 
 *   **Functionality**
     *   Correct implementation of adding and removing tickers.
@@ -50,34 +39,8 @@ Your submission will be evaluated on the following criteria:
     *   Price updates from the TradingView page should be reflected on the client with minimal delay.
     *   We prefer a push-based architecture over polling, which can introduce unnecessary delays.
 
-The following aspects will **NOT** be evaluated:
-
-*   **UI Aesthetics** A polished UI is not necessary as long as the application is fully functional.
-*   **Commit History** You may use brief or empty commit messages.
-
-## Running Your Submission
-We will use the following steps to run your project. Please ensure that your submission is configured correctly for this.
-
 1.  Run `pnpm install --recursive` to install all dependencies.
 2.  Run `./run.sh` to launch the application.
     *   This single script should handle all necessary steps, including code generation (e.g., `buf generate`) and starting both the frontend and backend servers.
 3.  Open `http://localhost:3000` in a web browser.
 4.  Test the functionality by adding and removing various tickers.
-
-## Submission
-*   The submission deadline is **7 days** after you receive access to this repository.
-*   Commit your changes directly to this repository. Do not create a fork.
-*   We encourage incremental commits to help us understand your development process.
-*   Please do not delete existing files in this repository, though you may modify them as needed.
-*   You are allowed to use any AI tools.
-*   If you have any additional comments or notes about your submission, please add them to a `COMMENT.md` file in the root of the repository.
-*   If you have any questions or need hints, please email `careers@projectpluto.co`.
-
-#### When you are ready to submit:
-
-Please send an email with the following details:
-*   **To:** `careers@projectpluto.co`
-*   **Subject:** `Fullstack Engineer Coding Assessment Submission`
-*   **Body:** Include a link to this repository.
-
-After submitting, we ask that you delete your local copy of the repository.
